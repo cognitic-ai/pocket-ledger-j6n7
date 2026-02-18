@@ -1,6 +1,6 @@
 {
   "expo": {
-    "icon": "https://agent.expo.app/static/icon.png",
+    "icon": "https://storage.googleapis.com/expo-agent-images-production/production/345ae777-22e8-4c2f-b1c1-0330bbf8e818/019c6eda-77e7-7f8a-8668-decf1383b0f0/d6750e17-5493-40c3-9007-5320c7322bd5",
     "orientation": "default",
     "scheme": "acme",
     "userInterfaceStyle": "automatic",
@@ -15,7 +15,8 @@
       "expo-font",
       "expo-image",
       "expo-router",
-      "expo-web-browser"
+      "expo-web-browser",
+      "@bacons/apple-colors"
     ],
     "name": "Pocket Ledger",
     "owner": "colin_expo"

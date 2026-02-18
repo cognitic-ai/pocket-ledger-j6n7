@@ -1,88 +1,52 @@
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/components/theme-provider";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
-import { Tabs as WebTabs } from "expo-router/tabs";
-import { NativeTabs } from "expo-router/unstable-native-tabs";
-import { Platform, useWindowDimensions } from "react-native";
+import { Stack, useRouter, useSegments } from "expo-router";
+import { useEffect } from "react";
+import { ActivityIndicator, View } from "react-native";
 
-export default function Layout() {
-  return (
-    <ThemeProvider>
-      <TabsLayout />
-    </ThemeProvider>
-  );
-}
+function RouteGuard() {
+  const { user, isLoading } = useAuth();
+  const segments = useSegments();
+  const router = useRouter();
 
-function TabsLayout() {
-  if (process.env.EXPO_OS === "web") {
-    return <WebTabsLayout />;
-  } else {
-    return <NativeTabsLayout />;
+  useEffect(() => {
+    if (isLoading) return;
+
+    const inAuthGroup = segments[0] === "login";
+
+    if (!user && !inAuthGroup) {
+      router.replace("/login");
+    } else if (user && inAuthGroup) {
+      router.replace("/");
+    }
+  }, [user, isLoading, segments]);
+
+  if (isLoading) {
+    return (
+      <View style={{ flex: 1, alignItems: "center", justifyContent: "center" }}>
+        <ActivityIndicator size="large" />
+      </View>
+    );
   }
-}
-
-function WebTabsLayout() {
-  const { width } = useWindowDimensions();
-  const isMd = width >= 768;
-  const isLg = width >= 1024;
 
   return (
-    <WebTabs
+    <Stack
       screenOptions={{
-        headerShown: false,
-        ...(isMd
-          ? {
-              tabBarPosition: "left",
-              tabBarVariant: "material",
-              tabBarLabelPosition: isLg ? undefined : "below-icon",
-            }
-          : {
-              tabBarPosition: "bottom",
-            }),
+        headerShown: true,
       }}
     >
-      <WebTabs.Screen
-        name="index"
-        options={{
-          title: "Home",
-          tabBarIcon: (props) => <MaterialIcons {...props} name="home" />,
-        }}
-      />
-      <WebTabs.Screen
-        name="info"
-        options={{
-          title: "Info",
-          tabBarIcon: (props) => <MaterialIcons {...props} name="info" />,
-        }}
-      />
-    </WebTabs>
+      <Stack.Screen name="index" options={{ title: "FinanceKit" }} />
+      <Stack.Screen name="login" options={{ headerShown: false }} />
+    </Stack>
   );
 }
 
-function NativeTabsLayout() {
+export default function RootLayout() {
   return (
-    <NativeTabs>
-      <NativeTabs.Trigger name="index">
-        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          {...Platform.select({
-            ios: { sf: { default: "house", selected: "house.fill" } },
-            default: {
-              src: <NativeTabs.Trigger.VectorIcon family={MaterialIcons} name="home" />,
-            },
-          })}
-        />
-      </NativeTabs.Trigger>
-      <NativeTabs.Trigger name="info">
-        <NativeTabs.Trigger.Label>Info</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          {...Platform.select({
-            ios: { sf: "cursorarrow.rays" },
-            default: {
-              src: <NativeTabs.Trigger.VectorIcon family={MaterialIcons} name="info" />,
-            },
-          })}
-        />
-      </NativeTabs.Trigger>
-    </NativeTabs>
+    <ThemeProvider>
+      <AuthProvider>
+        <RouteGuard />
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
